@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品信息提取器</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Microsoft YaHei', sans-serif; font-size: 13px; color: #1f2937; background: #f9fafb; }
+    .app { display: flex; flex-direction: column; height: 100vh; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 16px; }
+    .header-title { font-size: 15px; font-weight: 600; }
+    .header-sub { font-size: 11px; opacity: 0.85; margin-top: 2px; }
+    .toolbar { padding: 10px 12px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; flex-wrap: wrap; gap: 6px; }
+    .btn { padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500; transition: all 0.2s; }
+    .btn-primary { background: #3b82f6; color: white; }
+    .btn-primary:hover { background: #2563eb; }
+    .btn-green { background: #10b981; color: white; }
+    .btn-green:hover { background: #059669; }
+    .btn-orange { background: #f59e0b; color: white; }
+    .btn-orange:hover { background: #d97706; }
+    .btn-gray { background: #6b7280; color: white; }
+    .btn-gray:hover { background: #4b5563; }
+    .btn-purple { background: #8b5cf6; color: white; }
+    .btn-purple:hover { background: #7c3aed; }
+    .btn-black { background: #1f2937; color: white; }
+    .btn-black:hover { background: #111827; }
+    .btn-sm { padding: 4px 8px; font-size: 11px; }
+    .tabs { display: flex; background: white; border-bottom: 1px solid #e5e7eb; padding: 0 8px; }
+    .tab { padding: 10px 14px; cursor: pointer; font-size: 12px; color: #6b7280; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .tab.active { color: #3b82f6; border-bottom-color: #3b82f6; font-weight: 500; }
+    .tab:hover { color: #374151; }
+    .content { flex: 1; overflow-y: auto; padding: 12px; }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .info-card { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+    .info-title { font-size: 11px; color: #6b7280; margin-bottom: 4px; }
+    .info-value { font-size: 13px; color: #1f2937; font-weight: 500; line-height: 1.5; }
+    .info-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .info-row:last-child { margin-bottom: 0; }
+    .info-row .info-item { flex: 1; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 500; }
+    .badge-tmall { background: #fef3c7; color: #92400e; }
+    .badge-jd { background: #dbeafe; color: #1e40af; }
+    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-warning { background: #fef3c7; color: #92400e; }
+    .param-grid { display: grid; grid-template-columns: 1fr; gap: 6px; }
+    .param-item { display: flex; background: #f9fafb; border-radius: 4px; padding: 6px 8px; }
+    .param-key { color: #6b7280; font-size: 11px; width: 80px; flex-shrink: 0; }
+    .param-val { color: #1f2937; font-size: 12px; flex: 1; word-break: break-all; }
+    .img-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .img-item { position: relative; background: white; border-radius: 6px; overflow: hidden; border: 1px solid #e5e7eb; }
+    .img-item img { width: 100%; height: 80px; object-fit: cover; display: block; }
+    .img-copy { position: absolute; top: 4px; right: 4px; background: rgba(0,0,0,0.6); color: white; padding: 2px 6px; border-radius: 4px; font-size: 10px; cursor: pointer; opacity: 0; transition: opacity 0.2s; }
+    .img-item:hover .img-copy { opacity: 1; }
+    .empty-state { text-align: center; padding: 40px 20px; color: #9ca3af; }
+    .empty-icon { font-size: 36px; margin-bottom: 10px; }
+    .empty-text { font-size: 13px; }
+    .error-bar { background: #fee2e2; color: #991b1b; padding: 8px 12px; font-size: 12px; display: none; }
+    .error-bar.show { display: block; }
+    .ai-panel { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .ai-loading { text-align: center; padding: 20px; color: #6b7280; }
+    .ai-result { font-size: 12px; line-height: 1.8; color: #374151; white-space: pre-wrap; word-break: break-all; }
+    .ai-result h1, .ai-result h2, .ai-result h3 { margin-top: 12px; margin-bottom: 6px; }
+    .ai-result h1 { font-size: 16px; }
+    .ai-result h2 { font-size: 14px; }
+    .ai-result h3 { font-size: 13px; }
+    .project-item { background: white; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+    .project-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+    .project-name { font-weight: 500; font-size: 13px; }
+    .mini-btn { padding: 3px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; }
+    .mini-btn-green { background: #10b981; color: white; }
+    .mini-btn-red { background: #ef4444; color: white; }
+    .mini-btn-blue { background: #3b82f6; color: white; }
+    .project-product { padding: 4px 0; font-size: 12px; color: #4b5563; border-bottom: 1px solid #f3f4f6; }
+    .project-product:last-child { border-bottom: none; }
+    .tag { display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-right: 4px; }
+    .tag-mine { background: #dbeafe; color: #1e40af; }
+    .tag-competitor { background: #fce7f3; color: #9d174d; }
+    .project-create { display: flex; gap: 6px; margin-bottom: 12px; }
+    .project-input { flex: 1; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; }
+    .project-add-buttons { display: flex; gap: 6px; margin-top: 8px; }
+    .add-btn { flex: 1; padding: 6px; border: none; border-radius: 6px; cursor: pointer; font-size: 11px; font-weight: 500; }
+    .add-mine { background: #dbeafe; color: #1e40af; }
+    .add-competitor { background: #fce7f3; color: #9d174d; }
+    .settings-section { background: white; border-radius: 8px; padding: 12px; margin-bottom: 10px; }
+    .settings-title { font-size: 13px; font-weight: 500; margin-bottom: 10px; color: #1f2937; }
+    .form-group { margin-bottom: 10px; }
+    .form-group:last-child { margin-bottom: 0; }
+    .form-label { font-size: 12px; color: #4b5563; margin-bottom: 4px; display: block; }
+    .form-input { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; }
+    .form-select { width: 100%; padding: 6px 10px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 12px; background: white; }
+    .cache-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; background: #d1fae5; color: #065f46; margin-left: 6px; }
+    .bottom-bar { padding: 8px 12px; background: white; border-top: 1px solid #e5e7eb; display: flex; gap: 6px; }
+    .bottom-bar .btn { flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="header">
+      <div class="header-title">🛒 商品信息提取器</div>
+      <div class="header-sub" id="header-sub">提取天猫/京东商品信息</div>
+    </div>
+    <div class="error-bar" id="error-bar"></div>
+    <div class="toolbar">
+      <button class="btn btn-primary" id="btn-extract">提取信息</button>
+      <button class="btn btn-green" id="btn-ai">AI分析</button>
+      <button class="btn btn-orange" id="btn-excel">导出Excel</button>
+      <button class="btn btn-gray" id="btn-report">导出报告</button>
+      <button class="btn btn-purple" id="btn-export-info">导出商品信息</button>
+      <button class="btn btn-black" id="btn-help">📖 使用说明</button>
+    </div>
+    <div class="tabs">
+      <div class="tab active" data-tab="info">基础信息</div>
+      <div class="tab" data-tab="params">参数</div>
+      <div class="tab" data-tab="images">图片</div>
+      <div class="tab" data-tab="ai">AI分析</div>
+      <div class="tab" data-tab="project">项目</div>
+      <div class="tab" data-tab="settings">设置</div>
+    </div>
+    <div class="content">
+      <div class="panel active" id="panel-info">
+        <div class="empty-state" id="empty-info">
+          <div class="empty-icon">📦</div>
+          <div class="empty-text">点击「提取信息」开始提取商品数据</div>
+        </div>
+        <div id="info-content" style="display:none;">
+          <div class="info-card">
+            <div class="info-title">平台<span class="cache-badge" id="cache-badge" style="display:none;">已缓存</span></div>
+            <div class="info-value"><span class="badge" id="info-platform">-</span></div>
+          </div>
+          <div class="info-card">
+            <div class="info-title">商品标题</div>
+            <div class="info-value" id="info-title">-</div>
+          </div>
+          <div class="info-row">
+            <div class="info-item">
+              <div class="info-card">
+                <div class="info-title">品牌</div>
+                <div class="info-value" id="info-brand">-</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-card">
+                <div class="info-title">型号</div>
+                <div class="info-value" id="info-model">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="info-row">
+            <div class="info-item">
+              <div class="info-card">
+                <div class="info-title">价格</div>
+                <div class="info-value" id="info-price">-</div>
+              </div>
+            </div>
+            <div class="info-item">
+              <div class="info-card">
+                <div class="info-title">销量</div>
+                <div class="info-value" id="info-sale">-</div>
+              </div>
+            </div>
+          </div>
+          <div class="info-card">
+            <div class="info-title">店铺</div>
+            <div class="info-value" id="info-shop">-</div>
+          </div>
+          <div class="info-card">
+            <div class="info-title">类目</div>
+            <div class="info-value" id="info-category">-</div>
+          </div>
+        </div>
+      </div>
+      <div class="panel" id="panel-params">
+        <div class="empty-state" id="empty-params">
+          <div class="empty-icon">📋</div>
+          <div class="empty-text">暂无参数数据</div>
+        </div>
+        <div class="param-grid" id="params-grid"></div>
+      </div>
+      <div class="panel" id="panel-images">
+        <div class="empty-state" id="empty-images">
+          <div class="empty-icon">🖼️</div>
+          <div class="empty-text">暂无图片数据</div>
+        </div>
+        <div class="img-grid" id="images-grid"></div>
+      </div>
+      <div class="panel" id="panel-ai">
+        <div class="empty-state" id="empty-ai">
+          <div class="empty-icon">🤖</div>
+          <div class="empty-text">先提取信息，再进行AI分析</div>
+        </div>
+        <div class="ai-loading" id="ai-loading" style="display:none;">
+          <div style="margin-bottom:12px;font-weight:500;">🤖 AI分析中，请稍候...</div>
+          <div style="width:100%;height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden;margin-bottom:8px;">
+            <div id="ai-progress-fill" style="height:100%;background:linear-gradient(90deg,#667eea,#764ba2);width:0%;transition:width 0.3s;"></div>
+          </div>
+          <div id="ai-progress-text" style="font-size:12px;color:#6b7280;">正在初始化...</div>
+          <div id="ai-batch-status" style="margin-top:12px;text-align:left;display:none;">
+            <div style="font-size:11px;color:#6b7280;margin-bottom:6px;">图片批次进度：</div>
+            <div id="ai-batch-list" style="display:flex;flex-wrap:wrap;gap:4px;"></div>
+          </div>
+        </div>
+        <div class="ai-panel" id="ai-panel" style="display:none;">
+          <div class="ai-result" id="ai-result"></div>
+        </div>
+      </div>
+      <div class="panel" id="panel-project">
+        <div class="project-create">
+          <input type="text" class="project-input" id="new-project-name" placeholder="新建项目名称">
+          <button class="btn btn-green btn-sm" id="btn-create-project">创建</button>
+        </div>
+        <div id="project-list"></div>
+      </div>
+      <div class="panel" id="panel-settings">
+        <div class="settings-section">
+          <div class="settings-title">🤖 AI Agent 管理</div>
+          <div id="agent-list"></div>
+          <button class="btn btn-primary" id="btn-add-agent" style="width:100%;margin-top:8px;">➕ 添加Agent</button>
+        </div>
+        <div id="agent-editor" style="display:none;"></div>
+        <div class="settings-section">
+          <div class="settings-title">缓存设置</div>
+          <div class="form-group">
+            <label class="form-label">缓存有效期（小时）</label>
+            <input type="number" class="form-input" id="cache-hours" value="24" min="1" max="168">
+          </div>
+          <button class="btn btn-gray btn-sm" id="btn-clear-cache">清除所有缓存</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script src="sidepanel.js"></script>
+</body>
+</html>

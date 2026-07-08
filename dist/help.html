@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>使用说明 - 商品信息提取器</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+      background: #f9fafb;
+      color: #1f2937;
+      line-height: 1.6;
+      padding: 24px;
+      max-width: 960px;
+      margin: 0 auto;
+    }
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .header h1 { font-size: 24px; margin-bottom: 8px; }
+    .header p { font-size: 14px; opacity: 0.9; }
+    .content {
+      background: white;
+      padding: 32px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 { font-size: 22px; margin: 24px 0 12px; color: #111827; border-bottom: 2px solid #e5e7eb; padding-bottom: 8px; }
+    h1:first-child { margin-top: 0; }
+    h2 { font-size: 18px; margin: 20px 0 10px; color: #1f2937; }
+    h3 { font-size: 15px; margin: 16px 0 8px; color: #374151; }
+    p { margin: 8px 0; font-size: 14px; }
+    ul, ol { margin: 8px 0 8px 24px; }
+    li { margin: 4px 0; font-size: 14px; }
+    code {
+      background: #f3f4f6;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-family: 'Consolas', 'Monaco', monospace;
+      font-size: 13px;
+      color: #dc2626;
+    }
+    pre {
+      background: #f3f4f6;
+      padding: 12px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin: 8px 0;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: #1f2937;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 12px;
+      text-align: left;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    tr:nth-child(even) { background: #f9fafb; }
+    .toc {
+      background: #f3f4f6;
+      padding: 16px 24px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+    }
+    .toc h3 { margin-top: 0; color: #6b7280; font-size: 13px; }
+    .toc ul { margin: 8px 0 0 0; }
+    .toc a {
+      color: #3b82f6;
+      text-decoration: none;
+      font-size: 13px;
+    }
+    .toc a:hover { text-decoration: underline; }
+    .note {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .tip {
+      background: #d1fae5;
+      border-left: 4px solid #10b981;
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 4px;
+      font-size: 13px;
+    }
+    .back-top {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #3b82f6;
+      color: white;
+      padding: 10px 16px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-size: 13px;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+    .back-top:hover { background: #2563eb; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🛒 电商商品信息提取与AI分析助手</h1>
+    <p>Chrome 浏览器扩展 · 从天猫/京东商品详情页提取信息并 AI 智能分析</p>
+  </div>
+
+  <div class="toc">
+    <h3>📋 目录</h3>
+    <ul>
+      <li><a href="#section1">一、功能概览</a></li>
+      <li><a href="#section2">二、安装方法</a></li>
+      <li><a href="#section3">三、使用流程</a></li>
+      <li><a href="#section4">四、AI Agent 配置说明</a></li>
+      <li><a href="#section5">五、缓存机制</a></li>
+      <li><a href="#section6">六、AI 分析报告内容</a></li>
+      <li><a href="#section7">七、技术细节</a></li>
+      <li><a href="#section8">八、常见问题</a></li>
+      <li><a href="#section9">九、文件结构</a></li>
+    </ul>
+  </div>
+
+  <div class="content">
+    <h1 id="section1">一、功能概览</h1>
+    <table>
+      <tr><th>功能</th><th>说明</th></tr>
+      <tr><td>商品信息提取</td><td>自动识别天猫/京东商品页，提取标题、品牌、价格、销量、店铺、参数等</td></tr>
+      <tr><td>图片提取</td><td>自动提取商品详情页图片（已过滤主图、评价图等无关图片）</td></tr>
+      <tr><td>AI 智能分析</td><td>调用主流大模型，结合图片内容生成专业分析报告</td></tr>
+      <tr><td>多 Agent 配置</td><td>支持配置多个 AI 模型，分主分析、多模态、降级、自定义类型</td></tr>
+      <tr><td>图片断点续载</td><td>图片分析结果单独缓存，中断后可续传分析</td></tr>
+      <tr><td>多种导出</td><td>支持 Excel/CSV、Markdown 报告、商品信息 Markdown</td></tr>
+      <tr><td>数据缓存</td><td>商品信息和 AI 结果自动缓存，刷新页面自动加载</td></tr>
+      <tr><td>项目管理</td><td>可创建项目，将多个商品归类管理</td></tr>
+      <tr><td>侧边栏模式</td><td>支持以侧边栏形式常驻，方便多标签页操作</td></tr>
+    </table>
+
+    <h1 id="section2">二、安装方法</h1>
+    <h2>方式一：开发者模式加载（推荐）</h2>
+    <ol>
+      <li>打开 Chrome 浏览器，地址栏输入 <code>chrome://extensions/</code></li>
+      <li>右上角开启「开发者模式」</li>
+      <li>点击「加载已解压的扩展程序」</li>
+      <li>选择本扩展的 <code>dist</code> 文件夹（包含 <code>manifest.json</code> 的目录）</li>
+      <li>安装完成后，浏览器右上角会出现扩展图标</li>
+    </ol>
+    <h2>方式二：固定到工具栏</h2>
+    <ol>
+      <li>点击 Chrome 工具栏的拼图图标</li>
+      <li>找到「电商商品信息提取与AI分析助手」</li>
+      <li>点击钉子图标固定到工具栏，方便随时使用</li>
+    </ol>
+
+    <h1 id="section3">三、使用流程</h1>
+    <h2>1. 提取商品信息</h2>
+    <ol>
+      <li>打开天猫或京东的商品详情页</li>
+      <li>点击扩展图标（弹窗模式）或使用快捷键打开侧边栏</li>
+      <li>点击「提取信息」按钮</li>
+      <li>扩展会自动识别页面并提取：标题、品牌、型号、类目、价格、销量、店铺、商品参数、详情页图片</li>
+      <li>提取结果会自动缓存，下次打开同一页面会自动加载</li>
+    </ol>
+
+    <h2>2. AI 智能分析</h2>
+    <ol>
+      <li>先在「设置」中配置至少一个主分析 Agent（必须）和一个多模态 Agent（可选，用于图片分析）</li>
+      <li>提取完商品信息后，点击「AI分析」按钮</li>
+      <li>系统会自动执行：
+        <ul>
+          <li><b>图片分析阶段</b>：将详情页图片分批发送给多模态模型分析（每张图独立分析，支持断点续载）</li>
+          <li><b>文本分析阶段</b>：主模型综合商品信息和图片分析结果，生成完整报告</li>
+        </ul>
+      </li>
+      <li>分析过程中进度条实时显示当前状态</li>
+      <li>分析完成后，报告会自动缓存，下次打开自动加载</li>
+    </ol>
+
+    <h2>3. 重新分析</h2>
+    <table>
+      <tr><th>按钮</th><th>说明</th></tr>
+      <tr><td>🔄 续传分析</td><td>已分析过的图片直接跳过，只分析未完成的图片（省钱省时间）</td></tr>
+      <tr><td>🔄🔄 完全重分析</td><td>清除所有图片缓存，全部图片重新分析</td></tr>
+    </table>
+
+    <h2>4. 导出数据</h2>
+    <table>
+      <tr><th>按钮</th><th>说明</th></tr>
+      <tr><td>导出 Excel</td><td>导出 CSV 格式，包含商品所有字段和参数（可用 Excel 打开）</td></tr>
+      <tr><td>导出报告</td><td>导出 Markdown 格式的 AI 分析报告（需先做 AI 分析）</td></tr>
+      <tr><td>导出商品信息</td><td>导出 Markdown 格式的商品基础信息+参数（无需 AI 分析）</td></tr>
+    </table>
+
+    <h1 id="section4">四、AI Agent 配置说明</h1>
+    <h2>Agent 类型</h2>
+    <table>
+      <tr><th>类型</th><th>说明</th><th>是否必须</th></tr>
+      <tr><td>🟦 主分析</td><td>负责文本分析和报告生成</td><td>必须</td></tr>
+      <tr><td>🟪 多模态</td><td>负责图片内容分析（需支持视觉）</td><td>可选（建议配置）</td></tr>
+      <tr><td>🟧 降级</td><td>主 Agent 失效时自动切换使用</td><td>可选</td></tr>
+      <tr><td>⚪ 自定义</td><td>任意用途的 Agent</td><td>可选</td></tr>
+    </table>
+
+    <h2>支持的 AI 服务商</h2>
+    <table>
+      <tr><th>服务商</th><th>文本模型示例</th><th>视觉模型示例</th></tr>
+      <tr><td>DeepSeek</td><td>deepseek-chat, deepseek-reasoner</td><td>deepseek-vl2</td></tr>
+      <tr><td>千问</td><td>qwen-turbo, qwen-plus, qwen-max</td><td>qwen-vl-max, qwen-vl-plus</td></tr>
+      <tr><td>豆包</td><td>doubao-pro-4k, doubao-1.5-pro</td><td>doubao-vision-pro-32k</td></tr>
+      <tr><td>智谱</td><td>glm-4, glm-4-air, glm-4-flash</td><td>glm-4v, glm-4v-flash</td></tr>
+      <tr><td>Kimi</td><td>moonshot-v1-8k/32k/128k</td><td>不支持</td></tr>
+      <tr><td>百度</td><td>ernie-bot-4, ernie-4.0-8k</td><td>不支持</td></tr>
+      <tr><td>MiniMax</td><td>abab6.5s-chat</td><td>不支持</td></tr>
+      <tr><td>ChatGPT</td><td>gpt-4o-mini, gpt-4o, gpt-4-turbo</td><td>gpt-4o-mini, gpt-4o</td></tr>
+    </table>
+
+    <h2>配置步骤</h2>
+    <ol>
+      <li>在扩展中切换到「设置」标签</li>
+      <li>点击「➕ 添加Agent」</li>
+      <li>填写信息：名称、类型、服务商、端点、模型 ID、API Key</li>
+      <li>勾选「启用」复选框</li>
+      <li>点击「保存」</li>
+    </ol>
+    <div class="tip">
+      <b>提示</b>：模型 ID 输入框支持「下拉选择 + 手动输入」，切换服务商时端点和模型列表会自动填充。
+    </div>
+
+    <h2>API 格式说明</h2>
+    <p>扩展会根据端点后缀自动判断 API 格式：</p>
+    <ul>
+      <li>端点以 <code>/chat/completions</code> 结尾 → 使用 Chat Completions 格式（标准 OpenAI 格式）</li>
+      <li>端点以 <code>/responses</code> 结尾 → 使用 Responses API 格式（豆包 Seed 系列）</li>
+    </ul>
+
+    <h1 id="section5">五、缓存机制</h1>
+    <table>
+      <tr><th>缓存类型</th><th>前缀</th><th>有效期</th><th>说明</th></tr>
+      <tr><td>商品信息缓存</td><td>product_cache_</td><td>24 小时</td><td>提取的商品信息</td></tr>
+      <tr><td>AI 报告缓存</td><td>ai_result_cache_</td><td>24 小时</td><td>完整的 AI 分析报告</td></tr>
+      <tr><td>图片分析缓存</td><td>vision_cache_</td><td>7 天</td><td>每张图片的单独分析结果</td></tr>
+    </table>
+    <div class="note">
+      <b>断点续载机制</b>：每张图片分析完成后立即缓存，中断后再次分析时，已完成的图片直接跳过。点击「🔄 续传分析」即可继续未完成的分析。
+    </div>
+
+    <h1 id="section6">六、AI 分析报告内容</h1>
+    <ol>
+      <li><b>基本信息</b>：商品标题、品牌、型号、店铺、类目、价格、销量、参数、链接、采集时间</li>
+      <li><b>视觉分析</b>：整体设计调性、视觉重点、优秀画面表达、核心呈现场景、技术呈现方式</li>
+      <li><b>文案表达结构</b>：内容模块分析、模块顺序与逻辑</li>
+      <li><b>核心卖点提炼</b>：5 个核心卖点</li>
+      <li><b>卖点内容比例</b>：核心卖点与辅助卖点识别、内容分配比例分析</li>
+      <li><b>文案风格说明</b>：页面文案的语言风格描述</li>
+    </ol>
+
+    <h1 id="section7">七、技术细节</h1>
+    <h2>支持的页面</h2>
+    <ul>
+      <li>✅ 天猫商品详情页（<code>*.tmall.com</code>）</li>
+      <li>✅ 京东商品详情页（<code>*.jd.com</code>、<code>*.jd.hk</code>）</li>
+      <li>✅ 淘宝商品详情页（<code>*.taobao.com</code>）</li>
+    </ul>
+    <h2>图片处理</h2>
+    <ul>
+      <li>京东图片 URL 自动去除 .avif 后缀</li>
+      <li>仅提取详情页图片，过滤主图、缩略图、评价图</li>
+      <li>图片下载时自动添加 Referer 头绕过防盗链</li>
+      <li>超过 1.5MB 的大图会单独标记分析</li>
+      <li>每张图片独立调用 API，避免并发限制</li>
+    </ul>
+    <h2>分批策略</h2>
+    <ul>
+      <li>每批最多 3 张图片</li>
+      <li>每批之间间隔 1 秒，避免触发 API 频率限制</li>
+      <li>单次最多分析 20 张图片</li>
+      <li>失败的图片会自动重试（最多 5 张）</li>
+    </ul>
+
+    <h1 id="section8">八、常见问题</h1>
+    <h3>Q1：点击「提取信息」提示"请在天猫或京东商品页面使用"</h3>
+    <p>A：请确保当前页面是天猫、京东或淘宝的商品详情页。</p>
+    <h3>Q2：点击「AI分析」提示"请先在设置中配置并启用主分析Agent"</h3>
+    <p>A：去「设置」中添加一个类型为「主分析」的 Agent，填入 API Key 并启用。</p>
+    <h3>Q3：AI 分析一直卡住</h3>
+    <p>A：可能原因：API Key 不正确、网络问题、模型不支持图片输入、端点格式不匹配。打开 <code>chrome://extensions/</code> → 找到本扩展 → 点击「Service Worker」查看日志。</p>
+    <h3>Q4：图片分析失败</h3>
+    <p>A：京东图片有防盗链，扩展会先下载图片转 base64 再发送给 AI。如仍失败，请检查网络或减少图片数量。</p>
+    <h3>Q5：续传分析没生效</h3>
+    <p>A：续传分析依赖图片缓存。如果之前分析从未成功过，则没有缓存可续传。</p>
+    <h3>Q6：如何切换 API 格式</h3>
+    <p>A：修改 Agent 的端点后缀即可：<code>/chat/completions</code> 或 <code>/responses</code>。</p>
+
+    <h1 id="section9">九、文件结构</h1>
+    <pre><code>dist/
+├── manifest.json          # 扩展配置文件
+├── background.js          # 后台服务（AI 调用、消息处理）
+├── content.js             # 内容脚本（页面信息提取）
+├── popup/                 # 弹窗模式
+│   ├── index.html
+│   └── popup.js
+├── sidepanel/             # 侧边栏模式
+│   ├── sidepanel.html
+│   └── sidepanel.js
+├── help.html              # 使用说明页面
+└── README.md              # 说明文档</code></pre>
+
+    <h1>版本说明</h1>
+    <ul>
+      <li>支持 Chrome Manifest V3</li>
+      <li>兼容 Chrome 88+ 及基于 Chromium 的浏览器（Edge、360、QQ 浏览器等）</li>
+      <li>纯原生 HTML/JS/CSS 实现，无外部依赖，符合 Chrome 扩展 CSP 要求</li>
+    </ul>
+  </div>
+
+  <a href="#" class="back-top" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;">↑ 返回顶部</a>
+</body>
+</html>

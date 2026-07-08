@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "电商商品信息提取器",
+  "version": "1.0.0",
+  "description": "提取天猫和京东商品详情页的关键信息，支持AI分析和多格式导出",
+  "permissions": ["activeTab", "storage", "scripting", "tabs"],
+  "host_permissions": [
+    "https://*.tmall.com/*",
+    "https://*.jd.com/*",
+    "https://api.deepseek.com/*",
+    "https://dashscope.aliyuncs.com/*",
+    "https://api.doubao.com/*",
+    "https://api.openai.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://*.tmall.com/item.htm*", "https://*.jd.com/*.html"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_popup": "popup/index.html",
+    "default_title": "商品信息提取器"
+  }
+}
