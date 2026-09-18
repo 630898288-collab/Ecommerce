@@ -1,0 +1,5 @@
+interface:
+  display_name: "飞利浦 PPT 模板"
+  short_description: "严格复用内嵌飞利浦母版、版式与品牌元素创建或修改演示文稿"
+  brand_color: "#0B5ED7"
+  default_prompt: "使用 $philips-ppt-template 按封装的飞利浦母版创建一份演示文稿。"
